@@ -2,6 +2,7 @@
 	"visualoverhaul.midnightconfig.title":"Visual Overhaul Config",
 	"visualoverhaul.midnightconfig.brewingstand":"Brewing Stand Enhancements",
 	"visualoverhaul.midnightconfig.jukebox":"Jukebox Enhancements",
+	"visualoverhaul.midnightconfig.jukebox.tooltip":"§cNeeds restart!",
 	"visualoverhaul.midnightconfig.jukebox_fake_block":"Fake block on jukebox top",
 	"visualoverhaul.midnightconfig.jukebox_clientside":"Client-side music disc detection",
 	"visualoverhaul.midnightconfig.jukebox_clientside.tooltip":"Might not be 100% accurate with custom music discs.",

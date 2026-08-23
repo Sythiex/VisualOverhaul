@@ -6,6 +6,7 @@ import eu.midnightdust.visualoverhaul.block.model.FurnaceWoodenPlanksModel;
 import eu.midnightdust.visualoverhaul.block.renderer.BrewingStandBlockEntityRenderer;
 import eu.midnightdust.visualoverhaul.block.renderer.FurnaceBlockEntityRenderer;
 import eu.midnightdust.visualoverhaul.block.renderer.JukeboxBlockEntityRenderer;
+import eu.midnightdust.visualoverhaul.config.VOConfig;
 import eu.midnightdust.visualoverhaul.packet.HelloPacket;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.MinecraftClient;
@@ -37,7 +38,9 @@ public class VisualOverhaulClientEvents {
     @SubscribeEvent
     public static void registerBlockEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(BlockEntityType.BREWING_STAND, BrewingStandBlockEntityRenderer::new);
-        event.registerBlockEntityRenderer(BlockEntityType.JUKEBOX, JukeboxBlockEntityRenderer::new);
+        if (VOConfig.jukebox) {
+            event.registerBlockEntityRenderer(BlockEntityType.JUKEBOX, JukeboxBlockEntityRenderer::new);
+        }
         event.registerBlockEntityRenderer(BlockEntityType.FURNACE, FurnaceBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityType.SMOKER, FurnaceBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityType.BLAST_FURNACE, FurnaceBlockEntityRenderer::new);

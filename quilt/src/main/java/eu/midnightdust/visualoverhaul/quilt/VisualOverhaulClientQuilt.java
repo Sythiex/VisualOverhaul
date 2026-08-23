@@ -62,7 +62,9 @@ public class VisualOverhaulClientQuilt implements ClientModInitializer {
         BlockRenderLayerMap.put(RenderLayer.getCutout(), Blocks.BLAST_FURNACE);
 
         BlockEntityRendererFactories.register(BlockEntityType.BREWING_STAND, BrewingStandBlockEntityRenderer::new);
-        BlockEntityRendererFactories.register(BlockEntityType.JUKEBOX, JukeboxBlockEntityRenderer::new);
+        if (VOConfig.jukebox) {
+            BlockEntityRendererFactories.register(BlockEntityType.JUKEBOX, JukeboxBlockEntityRenderer::new);
+        }
         BlockEntityRendererFactories.register(BlockEntityType.FURNACE, FurnaceBlockEntityRenderer::new);
         BlockEntityRendererFactories.register(BlockEntityType.SMOKER, FurnaceBlockEntityRenderer::new);
         BlockEntityRendererFactories.register(BlockEntityType.BLAST_FURNACE, FurnaceBlockEntityRenderer::new);
