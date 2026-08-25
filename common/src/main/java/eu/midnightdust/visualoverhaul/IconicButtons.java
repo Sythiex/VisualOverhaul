@@ -4,11 +4,9 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import eu.midnightdust.visualoverhaul.config.VOConfig;
 import eu.midnightdust.visualoverhaul.mixin.TextureManagerAccessor;
 import eu.midnightdust.visualoverhaul.util.ModIconUtil;
-import eu.midnightdust.visualoverhaul.util.VOColorUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.texture.ResourceTexture;
 import net.minecraft.client.texture.TextureManager;
@@ -16,18 +14,13 @@ import net.minecraft.resource.ResourceManager;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.ColorHelper;
-import net.minecraft.util.math.MathHelper;
-import org.apache.logging.log4j.LogManager;
 
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.Function;
 
 import static eu.midnightdust.visualoverhaul.VisualOverhaulCommon.LOGGER;
-import static eu.midnightdust.visualoverhaul.util.VOColorUtil.alphaAndBrightness;
 
 public class IconicButtons {
     MinecraftClient client = MinecraftClient.getInstance();
@@ -64,7 +57,7 @@ public class IconicButtons {
                 ResourceTexture abstractTexture = new ResourceTexture(iconId);
                 if (VOConfig.debug) System.out.println("Loading dynamic icon: "+iconId);
                 try {
-                    abstractTexture.loadContents(((TextureManagerAccessor)textureManager).getResourceContainer());
+                    abstractTexture.load(((TextureManagerAccessor)textureManager).getResourceContainer());
                 } catch (Exception e) {e.fillInStackTrace();}
                 textureManager.registerTexture(iconId, abstractTexture);
                 ICONS.put(iconId, iconId);
@@ -81,7 +74,8 @@ public class IconicButtons {
             boolean showLeftWhenBoth = (VOConfig.buttonIconPosition.equals(VOConfig.IconPosition.BOTH) && !limitedSpace) || (VOConfig.buttonIconPosition.equals(VOConfig.IconPosition.BOTH) && widget.getX() < scaledWidth/2);
             boolean showRightWhenBoth = (VOConfig.buttonIconPosition.equals(VOConfig.IconPosition.BOTH) && !limitedSpace) || (VOConfig.buttonIconPosition.equals(VOConfig.IconPosition.BOTH) && widget.getX() > scaledWidth/2);
 
-            int color = widget.active ? alphaAndBrightness(alpha, 1.0F) : alphaAndBrightness(alpha, 0.3F);
+            float brightness = widget.active ? 1.0F : 0.3F;
+            RenderSystem.setShaderColor(brightness, brightness, brightness, alpha);
             RenderSystem.enableBlend();
             RenderSystem.enableDepthTest();
             int inset = 2;
@@ -91,11 +85,12 @@ public class IconicButtons {
             Identifier textureId = ICONS.get(iconId);
 
             if (VOConfig.buttonIconPosition.equals(VOConfig.IconPosition.LEFT) || showLeftWhenBoth || (VOConfig.buttonIconPosition.equals(VOConfig.IconPosition.LOCATION) && widget.getX() < scaledWidth/2))
-                context.drawTexture(RenderLayer::getGuiTextured, textureId, widget.getX()+inset, widget.getY()+inset, 0, 0, size, size, size, size, size, size, color);
+                context.drawTexture(textureId, widget.getX()+inset, widget.getY()+inset, 0, 0, size, size, size, size);
 
             if (VOConfig.buttonIconPosition.equals(VOConfig.IconPosition.RIGHT) || showRightWhenBoth || (VOConfig.buttonIconPosition.equals(VOConfig.IconPosition.LOCATION) && widget.getX()+widget.getWidth() > scaledWidth/2))
-                context.drawTexture(RenderLayer::getGuiTextured, textureId, widget.getX()+widget.getWidth()-20+inset, widget.getY()+inset, 0, 0, size, size, size, size, size, size, color);
+                context.drawTexture(textureId, widget.getX()+widget.getWidth()-20+inset, widget.getY()+inset, 0, 0, size, size, size, size);
 
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             RenderSystem.disableBlend();
             RenderSystem.disableDepthTest();
         }

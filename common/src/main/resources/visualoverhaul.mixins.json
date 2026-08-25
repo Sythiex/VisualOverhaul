@@ -7,11 +7,7 @@
     "MixinJukeboxBlockEntity"
   ],
   "client": [
-    "ItemRenderStateAccessor",
     "MixinBlastFurnaceBlock",
-    "MixinConstantTintSource",
-    "MixinGrassTintSource",
-    "MixinPotionTintSource",
     "MixinPressableWidget",
     "MixinSliderWidget",
     "MixinSmokerBlock",

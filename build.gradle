@@ -1,7 +1,6 @@
 plugins {
     id "architectury-plugin" version "3.4-SNAPSHOT"
     id "dev.architectury.loom" version "1.7-SNAPSHOT" apply false
-    id "me.shedaniel.unified-publishing" version "0.1.+" apply false
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
 }
 
@@ -19,6 +18,15 @@ subprojects {
     apply plugin: 'dev.architectury.loom'
     apply plugin: 'architectury-plugin'
 
+    if (rootProject.enabled_platforms.split(",").contains(project.name)) {
+        tasks.withType(Jar).configureEach {
+            from(rootProject.file("LICENSE")) {
+                into "META-INF"
+                rename { "LICENSE_${rootProject.archives_base_name}" }
+            }
+        }
+    }
+
     dependencies {
         minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
         // The following line declares the mojmap mappings, you may use other mappings as well
@@ -35,7 +43,6 @@ subprojects {
 allprojects {
     apply plugin: "java"
     apply plugin: "architectury-plugin"
-    apply plugin: "maven-publish"
 
     archivesBaseName = rootProject.archives_base_name
     version = rootProject.mod_version
@@ -52,21 +59,6 @@ allprojects {
     tasks.withType(JavaCompile) {
         options.encoding = "UTF-8"
         options.release = 21
-    }
-    ext {
-        releaseChangelog = {
-            def changes = new StringBuilder()
-            changes << "## VisualOverhaul v$project.version for $project.minecraft_version\n[View the changelog](https://www.github.com/TeamMidnightDust/VisualOverhaul/commits/)"
-            def proc = "git log --max-count=1 --pretty=format:%s".execute()
-            proc.in.eachLine { line ->
-                def processedLine = line.toString()
-                if (!processedLine.contains("New translations") && !processedLine.contains("Merge") && !processedLine.contains("branch")) {
-                    changes << "\n- ${processedLine.capitalize()}"
-                }
-            }
-            proc.waitFor()
-            return changes.toString()
-        }
     }
 
     java {

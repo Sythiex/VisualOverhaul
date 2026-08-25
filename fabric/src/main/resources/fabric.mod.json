@@ -3,16 +3,17 @@
   "id": "visualoverhaul",
   "version": "${version}",
 
-  "name": "VisualOverhaul",
+  "name": "Visual Overhaul: Legacy",
   "description": "Adds better visuals for certain Minecraft Vanilla Blocks.",
   "authors": [
     "Motschen",
-    "TeamMidnightDust"
+    "TeamMidnightDust",
+    "Sythiex"
   ],
   "contact": {
-    "homepage": "https://www.midnightdust.eu/",
-    "sources": "https://github.com/TeamMidnightDust/VisualOverhaul",
-    "issues": "https://github.com/TeamMidnightDust/VisualOverhaul/issues"
+    "homepage": "https://github.com/Sythiex/VisualOverhaul",
+    "sources": "https://github.com/Sythiex/VisualOverhaul",
+    "issues": "https://github.com/Sythiex/VisualOverhaul/issues"
   },
 
   "license": "MIT",
@@ -30,7 +31,7 @@
 
   "depends": {
     "fabric": "*",
-    "minecraft": ">=1.19"
+    "minecraft": "=1.21.1"
   },
 
   "mixins": [

@@ -3,15 +3,11 @@ package eu.midnightdust.visualoverhaul;
 import eu.midnightdust.visualoverhaul.config.VOConfig;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.model.ModelNameSupplier;
-import net.minecraft.client.model.SpriteGetter;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.block.BlockRenderManager;
 import net.minecraft.client.render.model.*;
 import net.minecraft.client.render.model.json.JsonUnbakedModel;
-import net.minecraft.client.texture.Sprite;
-import net.minecraft.client.util.SpriteIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
@@ -34,8 +30,7 @@ public class FakeBlocks {
         manager.findResources("models", path -> path.getPath().startsWith("models/fakeblock") && path.getPath().endsWith(".json")).forEach((id, resource) -> {
             try {
                 JsonUnbakedModel unbaked = JsonUnbakedModel.deserialize(resource.getReader());
-                BakedModel baked = unbaked.bake(new ModelTextures.Builder().addFirst(unbaked.getTextures()).build(() -> "#fakeblock"), BAKER,
-                        new ModelBakeSettings(){}, Boolean.TRUE.equals(unbaked.getAmbientOcclusion()), unbaked.getGuiLight() != null && unbaked.getGuiLight().isSide(), unbaked.getTransformation());
+                BakedModel baked = unbaked.bake(BAKER, spriteId -> spriteId.getSprite(), new ModelBakeSettings(){});
                 Identifier fakeId = Identifier.of(id.getNamespace(), id.getPath().replace("models/fakeblock/", "").replace(".json", ""));
                 FAKE_MODELS.put(fakeId, baked);
                 if (VOConfig.debug) LOGGER.info("Successfully loaded fake block model: {}", fakeId);
@@ -50,20 +45,14 @@ public class FakeBlocks {
     }
 
     public static class FakeBaker implements Baker {
-        public BakedModel bake(Identifier id, ModelBakeSettings settings) {
-            return null; // Not used in Json models, so we just leave ít like this and cross our fingers.
+        @Override
+        public UnbakedModel getOrLoadModel(Identifier id) {
+            return null;
         }
 
         @Override
-        public SpriteGetter getSpriteGetter() {
-            return new SpriteGetter() {
-                static final SpriteIdentifier MISSING = new SpriteIdentifier(Identifier.ofVanilla("textures/atlas/blocks.png"), Identifier.ofVanilla("missingno"));
-
-                @Override public Sprite get(SpriteIdentifier spriteId) { return spriteId.getSprite(); }
-                @Override public Sprite getMissing(String textureId) { return MISSING.getSprite(); }
-            };
+        public BakedModel bake(Identifier id, ModelBakeSettings settings) {
+            return null; // Not used in Json models, so we just leave ít like this and cross our fingers.
         }
-
-        public ModelNameSupplier getModelNameSupplier() { return () -> "#fakeblock"; }
     }
 }

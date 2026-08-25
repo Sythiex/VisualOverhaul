@@ -1,20 +1,14 @@
 package eu.midnightdust.visualoverhaul.block.renderer;
 
-import eu.midnightdust.visualoverhaul.mixin.ItemRenderStateAccessor;
-import net.minecraft.client.model.ModelNameSupplier;
-import net.minecraft.client.model.SpriteGetter;
-import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.item.ItemRenderState;
 import net.minecraft.client.render.model.*;
 import net.minecraft.client.render.model.json.JsonUnbakedModel;
+import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.util.SpriteIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ModelTransformationMode;
-import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 
 import java.io.StringReader;
@@ -35,7 +29,7 @@ public class RoundDiscRenderer {
     */
     private static BakedModel requestModel(Identifier id) {
         JsonUnbakedModel model = JsonUnbakedModel.deserialize(new StringReader(getJsonModel(id)));
-        BakedModel bakedModel = model.bake(new ModelTextures.Builder().addFirst(model.getTextures()).build(()->"0"), maBaker, new ModelBakeSettings(){}, false, false, model.getTransformation());
+        BakedModel bakedModel = model.bake(maBaker, RoundDiscRenderer::getSprite, new ModelBakeSettings(){});
         DISCS.put(id, bakedModel);
         return bakedModel;
     }
@@ -57,54 +51,34 @@ public class RoundDiscRenderer {
         else return requestModel(id);
     }
     public static Identifier getModelId(ItemStack stack) {
-        //System.out.println(stack.getComponents());
-        Identifier modelId = Registries.ITEM.getId(stack.getItem());
-        if (stack.hasChangedComponent(DataComponentTypes.ITEM_MODEL))
-            modelId = stack.getComponents().get(DataComponentTypes.ITEM_MODEL);
-        else if (stack.hasChangedComponent(DataComponentTypes.CUSTOM_MODEL_DATA) && !stack.getComponents().get(DataComponentTypes.CUSTOM_MODEL_DATA).strings().isEmpty()) {
-            modelId = Identifier.tryParse(stack.getComponents().get(DataComponentTypes.CUSTOM_MODEL_DATA).getString(0));
-        }
-        return modelId;
+        MinecraftClient client = MinecraftClient.getInstance();
+        BakedModel itemModel = client.getItemRenderer().getModel(stack, client.world, client.player, 0);
+        return itemModel.getParticleSprite().getContents().getId();
     }
 
-    public static void render(Identifier modelId, int light, int overlay, MatrixStack matrices, VertexConsumerProvider vertexConsumers) {
-        ItemRenderState itemRenderState = new ItemRenderState();
-        ItemRenderState.LayerRenderState renderState = itemRenderState.newLayer();
-        ((ItemRenderStateAccessor)itemRenderState).setModelTransformationMode(ModelTransformationMode.GROUND);
-
-        renderState.setModel(getModel(modelId), RenderLayer.getCutout());
-
-        itemRenderState.render(matrices, vertexConsumers, light, overlay);
+    public static void render(ItemStack stack, int light, int overlay, MatrixStack matrices, VertexConsumerProvider vertexConsumers) {
+        Identifier modelId = getModelId(stack);
+        MinecraftClient.getInstance().getItemRenderer().renderItem(
+                stack, ModelTransformationMode.GROUND, false, matrices, vertexConsumers, light, overlay, getModel(modelId));
     }
 
     public static class DynamicBaker implements Baker {
         @Override
-        public BakedModel bake(Identifier id, ModelBakeSettings settings) {
-            return null; // Not used in Json models, so we just leave ít like this and cross our fingers.
+        public UnbakedModel getOrLoadModel(Identifier id) {
+            return null;
         }
 
         @Override
-        public SpriteGetter getSpriteGetter() {
-            return new SpriteGetter() {
-                static final Identifier MISSINGNO = Identifier.ofVanilla("missingno");
-                static final SpriteIdentifier MISSING_DISC = new SpriteIdentifier(Identifier.ofVanilla("textures/atlas/blocks.png"), id("item/music_disc_missing"));
-
-                @Override
-                public Sprite get(SpriteIdentifier spriteId) {
-                    Sprite sprite = spriteId.getSprite();
-                    if (sprite.getContents().getId().equals(MISSINGNO))
-                        return getMissing(spriteId.getTextureId().toString());
-                    return sprite;
-                }
-
-                @Override
-                public Sprite getMissing(String textureId) {
-                    return get(MISSING_DISC);
-                }
-            };
+        public BakedModel bake(Identifier id, ModelBakeSettings settings) {
+            return null; // Not used in Json models, so we just leave ít like this and cross our fingers.
         }
+    }
 
-        @Override // no clue what this does lol
-        public ModelNameSupplier getModelNameSupplier() { return () -> "round_disc"; }
+    private static Sprite getSprite(SpriteIdentifier spriteId) {
+        Sprite sprite = spriteId.getSprite();
+        if (sprite.getContents().getId().equals(Identifier.ofVanilla("missingno"))) {
+            return new SpriteIdentifier(Identifier.ofVanilla("textures/atlas/blocks.png"), id("item/music_disc_missing")).getSprite();
+        }
+        return sprite;
     }
 }

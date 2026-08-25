@@ -12,6 +12,6 @@ public class VOColorUtil {
         return (alpha << 24) | (red << 16) | (green << 8) | blue;
     }
     public static int alphaAndBrightness(float alpha, float brightness) {
-        return ColorHelper.getArgb(MathHelper.floor(alpha*255), MathHelper.floor(brightness*255), MathHelper.floor(brightness*255), MathHelper.floor(brightness*255));
+        return ColorHelper.Argb.getArgb(MathHelper.floor(alpha*255), MathHelper.floor(brightness*255), MathHelper.floor(brightness*255), MathHelper.floor(brightness*255));
     }
 }

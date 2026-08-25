@@ -10,11 +10,10 @@ import net.minecraft.client.color.world.BiomeColors;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderLayers;
 import net.minecraft.registry.Registries;
-import net.minecraft.resource.ResourcePackProfile;
+import net.minecraft.util.math.ColorHelper;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import org.apache.commons.compress.utils.Lists;
 
 import java.util.List;
 
@@ -23,7 +22,11 @@ import static eu.midnightdust.visualoverhaul.VisualOverhaulCommon.*;
 
 @SuppressWarnings("all")
 public class VisualOverhaulClientForge {
-    public static List<ResourcePackProfile> defaultEnabledPacks = Lists.newArrayList();
+    public static final List<String> DEFAULT_ENABLED_PACKS = List.of(
+            "visualoverhaul:nobrewingbottles",
+            "visualoverhaul:fancyfurnace",
+            "visualoverhaul:coloredwaterbucket"
+    );
     public static MinecraftClient client = MinecraftClient.getInstance();
     private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(Registries.BLOCK, MOD_ID);
 
@@ -40,12 +43,12 @@ public class VisualOverhaulClientForge {
         if (VOConfig.coloredItems) {
             MinecraftClient client = VisualOverhaulClientForge.client;
             if (client.world != null && client.player != null) {
-                waterColor = BiomeColors.getWaterColor(client.world, client.player.getBlockPos());
-                foliageColor = BiomeColors.getFoliageColor(client.world, client.player.getBlockPos());
-                grassColor = BiomeColors.getGrassColor(client.world, client.player.getBlockPos());
+                waterColor = ColorHelper.Argb.fullAlpha(BiomeColors.getWaterColor(client.world, client.player.getBlockPos()));
+                foliageColor = ColorHelper.Argb.fullAlpha(BiomeColors.getFoliageColor(client.world, client.player.getBlockPos()));
+                grassColor = ColorHelper.Argb.fullAlpha(BiomeColors.getGrassColor(client.world, client.player.getBlockPos()));
                 potionColor = VOColorUtil.convertRgbToArgb(waterColor, 200);
             } else {
-                waterColor = 4159204;
+                waterColor = ColorHelper.Argb.fullAlpha(4159204);
                 foliageColor = -8934609;
                 grassColor = -8934609;
                 potionColor = -13083194;

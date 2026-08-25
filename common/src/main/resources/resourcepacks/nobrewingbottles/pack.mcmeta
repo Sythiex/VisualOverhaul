@@ -1,7 +1,6 @@
 {
   "pack": {
-    "pack_format": 15,
-    "supported_formats": [15, 99],
-    "description": "§2Removes the bottles from the brewing stand"
+    "pack_format": 34,
+    "description": "§2Removes the vanilla bottles from the brewing stand"
   }
 }

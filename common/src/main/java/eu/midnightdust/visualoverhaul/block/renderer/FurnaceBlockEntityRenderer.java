@@ -16,7 +16,7 @@ import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ModelTransformationMode;
+import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.util.Identifier;
 import org.joml.AxisAngle4f;
@@ -41,7 +41,7 @@ public class FurnaceBlockEntityRenderer<E extends AbstractFurnaceBlockEntity> im
             ItemStack input = blockEntity.getStack(0);
             ItemStack fuel = blockEntity.getStack(1);
             ItemStack output = blockEntity.getStack(2);
-            float angle = (blockState.get(AbstractFurnaceBlock.FACING)).getRotationQuaternion().angle();
+            float angle = (blockState.get(AbstractFurnaceBlock.FACING)).asRotation();
 
             if(!input.isEmpty() || !output.isEmpty()) {
                 matrices.push();

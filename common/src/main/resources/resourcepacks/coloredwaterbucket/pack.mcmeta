@@ -1,7 +1,6 @@
 {
   "pack": {
-    "pack_format": 15,
-    "supported_formats": [15, 99],
+    "pack_format": 34,
     "description": "§2Makes the water bucket respect biome colors"
   }
 }

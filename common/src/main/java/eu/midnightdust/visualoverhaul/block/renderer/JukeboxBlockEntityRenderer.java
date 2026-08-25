@@ -15,6 +15,8 @@ import net.minecraft.client.render.block.BlockRenderManager;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
@@ -41,32 +43,33 @@ public class JukeboxBlockEntityRenderer implements BlockEntityRenderer<JukeboxBl
         if (VOConfig.jukebox) {
             int lightAbove = WorldRenderer.getLightmapCoordinates(Objects.requireNonNull(blockEntity.getWorld()), blockEntity.getPos().up());
 
-            Identifier discModel = null; // If the sound is stopped or no sound is playing, no model is set //
+            ItemStack discStack = ItemStack.EMPTY; // If the sound is stopped or no sound is playing, the stack stays empty //
 
             // Tries to get the disc using the serverside method
             if (jukeboxItems.containsKey(blockEntity.getPos()) && !jukeboxItems.get(blockEntity.getPos()).isEmpty()) {
-                discModel = RoundDiscRenderer.getModelId(jukeboxItems.get(blockEntity.getPos()));
+                discStack = jukeboxItems.get(blockEntity.getPos());
             }
             // Else gets the record sound played at the position of the jukebox //
             else if (SoundTest.getSound(blockEntity.getPos()) != null) {
                 // Converts the Sound ID to the item ID of the appropriate disc (minecraft:music_disc.cat -> minecraft:music_disc_cat) //
-                discModel = Identifier.of(String.valueOf(SoundTest.getSound(blockEntity.getPos())).replace(".", "_"));
+                Identifier discId = Identifier.of(String.valueOf(SoundTest.getSound(blockEntity.getPos())).replace(".", "_"));
+                discStack = new ItemStack(Registries.ITEM.get(discId));
             }
 
-            if (discModel != null) {
+            if (!discStack.isEmpty()) {
                 matrices.push();
 
                 matrices.translate(0.5f, 1.03f, 0.5f);
                 matrices.scale(0.75f, 0.75f, 0.75f);
                 matrices.multiply(new Quaternionf(new AxisAngle4f(Math.toRadians(Util.getMeasuringTimeMs() / 9.0f), 0, 1, 0)));
 
-                RoundDiscRenderer.render(discModel, lightAbove, overlay, matrices, vertexConsumers);
+                RoundDiscRenderer.render(discStack, lightAbove, overlay, matrices, vertexConsumers);
                 matrices.pop();
             }
             if (VOConfig.jukebox_fake_block && !blockEntity.getWorld().getBlockState(blockEntity.getPos().up()).isSideSolid(blockEntity.getWorld(),blockEntity.getPos().up(), Direction.DOWN, SideShapeType.FULL)) {
                 matrices.push();
                 matrices.translate(0f, 1f, 0f);
-                Identifier blockId = discModel != null ? id("jukebox_top_playing") : id("jukebox_top_stopped");
+                Identifier blockId = !discStack.isEmpty() ? id("jukebox_top_playing") : id("jukebox_top_stopped");
                 FakeBlocks.renderFakeBlock(blockId, blockEntity.getPos().up(), blockEntity.getWorld(), matrices, vertexConsumers.getBuffer(RenderLayer.getCutout()));
                 matrices.pop();
             }

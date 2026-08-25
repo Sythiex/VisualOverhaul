@@ -9,6 +9,7 @@
   ],
   "client": [
     "MixinResourcePackManager",
+    "MixinItemColors",
     "MixinBlockColors"
   ],
   "injectors": {

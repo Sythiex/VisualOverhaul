@@ -12,11 +12,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import static eu.midnightdust.visualoverhaul.VisualOverhaulCommon.MOD_ID;
 
 @Mixin(ResourcePackManager.class)
 public abstract class MixinResourcePackManager {
+    @Shadow private Map<String, ResourcePackProfile> profiles;
     @Shadow private List<ResourcePackProfile> enabled;
 
     @Inject(method = "setEnabledProfiles(Ljava/util/Collection;)V", at = @At("TAIL"))
@@ -24,7 +27,11 @@ public abstract class MixinResourcePackManager {
         if (VOConfig.firstLaunch) {
             List<ResourcePackProfile> enabledPacks = Lists.newArrayList();
             enabledPacks.addAll(enabled);
-            enabledPacks.addAll(VisualOverhaulClientForge.defaultEnabledPacks);
+            VisualOverhaulClientForge.DEFAULT_ENABLED_PACKS.stream()
+                    .map(profiles::get)
+                    .filter(Objects::nonNull)
+                    .filter(profile -> !enabledPacks.contains(profile))
+                    .forEach(enabledPacks::add);
             this.enabled = enabledPacks;
             VOConfig.firstLaunch = false;
             VOConfig.write(MOD_ID);

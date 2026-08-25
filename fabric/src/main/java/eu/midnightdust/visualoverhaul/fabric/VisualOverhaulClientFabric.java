@@ -29,9 +29,14 @@ import net.minecraft.block.entity.BrewingStandBlockEntity;
 import net.minecraft.client.color.world.BiomeColors;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.item.Items;
+import net.minecraft.potion.Potions;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.ColorHelper;
 
 import static eu.midnightdust.visualoverhaul.VisualOverhaulClient.*;
 import static eu.midnightdust.visualoverhaul.VisualOverhaulCommon.*;
@@ -80,9 +85,9 @@ public class VisualOverhaulClientFabric implements ClientModInitializer {
 
         // Register builtin resourcepacks
         FabricLoader.getInstance().getModContainer("visualoverhaul").ifPresent(modContainer -> {
-            ResourceManagerHelper.registerBuiltinResourcePack(id("nobrewingbottles"), modContainer, ResourcePackActivationType.DEFAULT_ENABLED);
-            ResourceManagerHelper.registerBuiltinResourcePack(id("fancyfurnace"), modContainer, ResourcePackActivationType.DEFAULT_ENABLED);
-            ResourceManagerHelper.registerBuiltinResourcePack(id("coloredwaterbucket"), modContainer, ResourcePackActivationType.DEFAULT_ENABLED);
+            ResourceManagerHelper.registerBuiltinResourcePack(id("nobrewingbottles"), modContainer, Text.literal("[VO:L] No Brewing Bottles"), ResourcePackActivationType.DEFAULT_ENABLED);
+            ResourceManagerHelper.registerBuiltinResourcePack(id("fancyfurnace"), modContainer, Text.literal("[VO:L] Fancy Furnaces"), ResourcePackActivationType.DEFAULT_ENABLED);
+            ResourceManagerHelper.registerBuiltinResourcePack(id("coloredwaterbucket"), modContainer, Text.literal("[VO:L] Colored Water Buckets"), ResourcePackActivationType.DEFAULT_ENABLED);
         });
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             if (client.player != null) {
@@ -94,17 +99,32 @@ public class VisualOverhaulClientFabric implements ClientModInitializer {
         if (VOConfig.coloredItems) {
             ClientTickEvents.END_CLIENT_TICK.register(client -> {
                 if (client.world != null && client.player != null) {
-                    waterColor = BiomeColors.getWaterColor(client.world, client.player.getBlockPos());
-                    foliageColor = BiomeColors.getFoliageColor(client.world, client.player.getBlockPos());
-                    grassColor = BiomeColors.getGrassColor(client.world, client.player.getBlockPos());
+                    waterColor = ColorHelper.Argb.fullAlpha(BiomeColors.getWaterColor(client.world, client.player.getBlockPos()));
+                    foliageColor = ColorHelper.Argb.fullAlpha(BiomeColors.getFoliageColor(client.world, client.player.getBlockPos()));
+                    grassColor = ColorHelper.Argb.fullAlpha(BiomeColors.getGrassColor(client.world, client.player.getBlockPos()));
                     potionColor = VOColorUtil.convertRgbToArgb(waterColor, 200);
                 } else {
-                    waterColor = 4159204;
+                    waterColor = ColorHelper.Argb.fullAlpha(4159204);
                     foliageColor = -8934609;
                     grassColor = -8934609;
                     potionColor = -13083194;
                 }
             });
+
+            ColorProviderRegistry.ITEM.register((stack, tintIndex) -> tintIndex == 0 ? -1 : waterColor, Items.WATER_BUCKET, Items.AXOLOTL_BUCKET, Items.COD_BUCKET, Items.PUFFERFISH_BUCKET, Items.TROPICAL_FISH_BUCKET, Items.SALMON_BUCKET);
+            ColorProviderRegistry.ITEM.register((stack, tintIndex) -> grassColor, Items.GRASS_BLOCK, Items.SHORT_GRASS, Items.TALL_GRASS, Items.FERN, Items.LARGE_FERN);
+            ColorProviderRegistry.ITEM.register((stack, tintIndex) -> foliageColor, Items.OAK_LEAVES, Items.DARK_OAK_LEAVES, Items.JUNGLE_LEAVES, Items.ACACIA_LEAVES, Items.VINE, Items.SUGAR_CANE);
+            if (VOConfig.coloredLilypad) ColorProviderRegistry.ITEM.register((stack, tintIndex) -> foliageColor, Items.LILY_PAD);
+
+            ColorProviderRegistry.ITEM.register((stack, tintIndex) -> {
+                var contents = stack.getComponents().get(DataComponentTypes.POTION_CONTENTS);
+                if (contents == null || contents.potion().isEmpty()) return tintIndex > 0 ? -1 : potionColor;
+                var potion = contents.potion().get();
+                if ((potion == Potions.WATER || potion == Potions.MUNDANE || potion == Potions.THICK || potion == Potions.AWKWARD) && tintIndex == 0) {
+                    return potionColor;
+                }
+                return tintIndex > 0 ? -1 : ColorHelper.Argb.fullAlpha(contents.getColor());
+            }, Items.POTION, Items.SPLASH_POTION, Items.LINGERING_POTION, Items.TIPPED_ARROW);
         }
         if (VOConfig.coloredLilypad) {
             ColorProviderRegistry.BLOCK.register((state, world, pos, tintIndex) -> world != null ? world.getColor(pos, BiomeColors.FOLIAGE_COLOR) : 0, Blocks.LILY_PAD);
