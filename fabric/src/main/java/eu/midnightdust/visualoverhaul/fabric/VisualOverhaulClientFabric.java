@@ -54,13 +54,17 @@ public class VisualOverhaulClientFabric implements ClientModInitializer {
         BlockRenderLayerMap.INSTANCE.putBlock(Blocks.SMOKER, RenderLayer.getCutout());
         BlockRenderLayerMap.INSTANCE.putBlock(Blocks.BLAST_FURNACE, RenderLayer.getCutout());
 
-        BlockEntityRendererFactories.register(BlockEntityType.BREWING_STAND, BrewingStandBlockEntityRenderer::new);
+        if (VOConfig.brewingstand) {
+            BlockEntityRendererFactories.register(BlockEntityType.BREWING_STAND, BrewingStandBlockEntityRenderer::new);
+        }
         if (VOConfig.jukebox) {
             BlockEntityRendererFactories.register(BlockEntityType.JUKEBOX, JukeboxBlockEntityRenderer::new);
         }
-        BlockEntityRendererFactories.register(BlockEntityType.FURNACE, FurnaceBlockEntityRenderer::new);
-        BlockEntityRendererFactories.register(BlockEntityType.SMOKER, FurnaceBlockEntityRenderer::new);
-        BlockEntityRendererFactories.register(BlockEntityType.BLAST_FURNACE, FurnaceBlockEntityRenderer::new);
+        if (VOConfig.furnace) {
+            BlockEntityRendererFactories.register(BlockEntityType.FURNACE, FurnaceBlockEntityRenderer::new);
+            BlockEntityRendererFactories.register(BlockEntityType.SMOKER, FurnaceBlockEntityRenderer::new);
+            BlockEntityRendererFactories.register(BlockEntityType.BLAST_FURNACE, FurnaceBlockEntityRenderer::new);
+        }
 
         // Phonos Compat //
         //if (FabricLoader.getInstance().isModLoaded("phonos")) {
