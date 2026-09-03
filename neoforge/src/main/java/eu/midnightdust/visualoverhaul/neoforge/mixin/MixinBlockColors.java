@@ -13,6 +13,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MixinBlockColors {
     @Inject(method = "create", at = @At("RETURN"))
     private static void create(CallbackInfoReturnable<BlockColors> info) {
-        if (VOConfig.coloredItems) info.getReturnValue().registerColorProvider((state, world, pos, tintIndex) -> world != null ? world.getColor(pos, BiomeColors.FOLIAGE_COLOR) : 0, Blocks.LILY_PAD);
+        if (VOConfig.coloredLilypad) info.getReturnValue().registerColorProvider((state, world, pos, tintIndex) -> world != null ? world.getColor(pos, BiomeColors.FOLIAGE_COLOR) : 0, Blocks.LILY_PAD);
     }
 }

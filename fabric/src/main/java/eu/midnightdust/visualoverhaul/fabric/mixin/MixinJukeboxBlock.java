@@ -1,11 +1,7 @@
 package eu.midnightdust.visualoverhaul.fabric.mixin;
 
 import eu.midnightdust.visualoverhaul.VisualOverhaulCommon;
-import eu.midnightdust.visualoverhaul.packet.UpdateItemsPacket;
-import eu.midnightdust.visualoverhaul.util.JukeboxPacketUpdate;
-import io.netty.buffer.Unpooled;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import eu.midnightdust.visualoverhaul.fabric.InventoryPacketSynchronizer;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.BlockWithEntity;
@@ -14,17 +10,11 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.entity.JukeboxBlockEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
-
-import java.util.stream.Stream;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(JukeboxBlock.class)
 public abstract class MixinJukeboxBlock extends BlockWithEntity {
@@ -38,23 +28,22 @@ public abstract class MixinJukeboxBlock extends BlockWithEntity {
         return BlockRenderType.MODEL;
     }
 
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        return world.isClient() ? null : validateTicker(type, BlockEntityType.JUKEBOX, MixinJukeboxBlock::visualoverhaul$tick);
-    }
-    @Unique
-    private static void visualoverhaul$tick(World world, BlockPos pos, BlockState state, JukeboxBlockEntity blockEntity) {
-        if (!world.isClient && (JukeboxPacketUpdate.invUpdate || world.getPlayers().size() != JukeboxPacketUpdate.playerUpdate)) {
-            Stream<ServerPlayerEntity> watchingPlayers = PlayerLookup.tracking(blockEntity).stream();
-
-            watchingPlayers.forEach(player -> {
-                if (VisualOverhaulCommon.playersWithMod.contains(player.getUuid())) {
-                    ServerPlayNetworking.send(player, new UpdateItemsPacket(VisualOverhaulCommon.UPDATE_TYPE_RECORD, pos, DefaultedList.ofSize(1, blockEntity.getStack())));
-                }
-            });
-            //JukeboxPacketUpdate.invUpdate = false;
+    @SuppressWarnings("unchecked")
+    @Inject(method = "getTicker", at = @At("RETURN"), cancellable = true)
+    private <T extends BlockEntity> void visualoverhaul$wrapServerTicker(World world, BlockState state, BlockEntityType<T> type,
+                                                                         CallbackInfoReturnable<BlockEntityTicker<T>> cir) {
+        if (world.isClient()) {
+            return;
         }
-        JukeboxPacketUpdate.playerUpdate = world.getPlayers().size();
+
+        BlockEntityTicker<T> vanillaTicker = cir.getReturnValue();
+        BlockEntityTicker<JukeboxBlockEntity> syncingTicker = (tickWorld, pos, tickState, blockEntity) -> {
+            if (vanillaTicker != null) {
+                ((BlockEntityTicker<JukeboxBlockEntity>) (Object) vanillaTicker).tick(tickWorld, pos, tickState, blockEntity);
+            }
+            InventoryPacketSynchronizer.sync(tickWorld, blockEntity, blockEntity, VisualOverhaulCommon.UPDATE_TYPE_RECORD, 1);
+        };
+        cir.setReturnValue(validateTicker(type, BlockEntityType.JUKEBOX, syncingTicker));
     }
 }
 
