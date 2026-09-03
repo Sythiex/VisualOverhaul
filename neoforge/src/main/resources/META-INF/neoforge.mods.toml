@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[2,)"
+loaderVersion = "[1,)"
 displayURL = "https://github.com/Sythiex/VisualOverhaul"
 issueTrackerURL = "https://github.com/Sythiex/VisualOverhaul/issues"
 license = "MIT"
@@ -21,28 +21,27 @@ config = "visualoverhaul-neoforge.mixins.json"
 
 [[dependencies.visualoverhaul]]
 modId = "neoforge"
-mandatory = true
+type = "required"
 versionRange = "[21.1,21.2)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.visualoverhaul]]
 modId = "minecraft"
-mandatory = true
+type = "required"
 versionRange = "[1.21.1,1.21.2)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.visualoverhaul]]
 modId = "midnightlib"
-mandatory = true
+type = "required"
 versionRange = "[1.0,)"
 ordering = "AFTER"
 side = "BOTH"
 
 [[dependencies.visualoverhaul]]
 modId = "amendments"
-mandatory = false
-versionRange = "[1.21-2.1.7,)"
+type = "optional"
 ordering = "AFTER"
 side = "CLIENT"
